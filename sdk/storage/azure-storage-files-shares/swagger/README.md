@@ -9,7 +9,7 @@ package-name: azure-storage-files-shares
 namespace: Azure::Storage::Files::Shares
 output-folder: generated
 clear-output-folder: true
-input-file: https://raw.githubusercontent.com/Azure/azure-rest-api-specs/main/specification/storage/data-plane/Microsoft.FileStorage/stable/2026-12-06/file.json
+input-file: file.json
 ```
 
 ## ModelFour Options
@@ -79,12 +79,12 @@ directive:
           "name": "ApiVersion",
           "modelAsString": false
           },
-        "enum": ["2026-10-06"]
+        "enum": ["2026-12-06"]
       };
   - from: swagger-document
     where: $.parameters
     transform: >
-      $.ApiVersionParameter.enum = ["2026-10-06"];
+      $.ApiVersionParameter.enum = ["2026-12-06"];
 ```
 
 ### Rename Operations
@@ -265,6 +265,35 @@ directive:
           "ChangedOn": {"type": "string", "format": "date-time", "x-nullable": true},
           "FileId": {"type": "string"},
           "ParentFileId": {"type": "string"}
+        }
+      };
+      $.ListItemWin32Properties = {
+        "type": "object",
+        "properties": {
+          "PermissionKey": {"type": "string", "x-nullable": true},
+          "Attributes": {"$ref": "#/definitions/FileAttributes", "x-nullable": true}
+        }
+      };
+      $.ListItemPosixProperties = {
+        "type": "object",
+        "properties": {
+          "Mode": {"type": "string", "x-nullable": true},
+          "User": {"type": "string", "x-nullable": true},
+          "Group": {"type": "string", "x-nullable": true}
+        }
+      };
+      $.ListItemCommonProperties = {
+        "type": "object",
+        "properties": {
+          "FileId": {"type": "string"},
+          "LinkCount": {"type": "integer", "format": "int64", "x-nullable": true},
+          "FileSize": {"type": "integer", "format": "int64", "x-nullable": true},
+          "CreatedOn": {"type": "string", "format": "date-time", "x-nullable": true},
+          "LastWrittenOn": {"type": "string", "format": "date-time", "x-nullable": true},
+          "ChangedOn": {"type": "string", "format": "date-time", "x-nullable": true},
+          "LastAccessedOn": {"type": "string", "format": "date-time", "x-nullable": true},
+          "LastModified": {"type": "string", "format": "date-time-rfc1123", "x-nullable": true},
+          "ETag": {"type": "string", "x-nullable": true}
         }
       };
       $.AccessTier = {
@@ -640,39 +669,48 @@ directive:
   - from: swagger-document
     where: $.parameters
     transform: >
-      $.ListFilesInclude["items"]["x-ms-enum"]["values"] = [{"name": "Timestamps", "value": "Timestamps"}, {"name": "ETag", "value": "Etag"}, {"name": "Attributes", "value": "Attributes"}, {"name": "PermissionKey", "value": "PermissionKey"},];
+      $.ListFilesInclude["items"]["x-ms-enum"]["values"] = [{"name": "Timestamps", "value": "Timestamps"}, {"name": "ETag", "value": "Etag"}, {"name": "Attributes", "value": "Attributes"}, {"name": "PermissionKey", "value": "PermissionKey"}, {"name": "NfsAttributes", "value": "NfsAttributes"}, {"name": "LinkCount", "value": "LinkCount"}, {"name": "Permissions", "value": "Permissions"}, {"name": "All", "value": "All"},];
   - from: swagger-document
     where: $.definitions
     transform: >
       $.ListFilesAndDirectoriesSegmentResponse.properties["Segment"]["x-ms-xml"] = {"name": "Entries"};
-      $.FileItemDetails = $.FileProperty;
-      $.FileItemDetails.properties["Content-Length"]["x-ms-client-name"] = "FileSize";
-      $.FileItemDetails.properties["SmbProperties"] = {"$ref": "#/definitions/FileSmbProperties", "x-ms-xml": {"name": "."}};
-      $.FileItemDetails.properties["LastAccessTime"]["x-ms-client-name"] = "LastAccessedOn";
-      $.FileItemDetails.properties["LastAccessTime"]["x-nullable"] = true;
-      $.FileSmbProperties.properties["PermissionKey"]["x-ms-xml"] = {"name": "../PermissionKey"};
-      $.FileSmbProperties.properties["Attributes"]["x-ms-xml"] = {"name": "../Attributes"};
-      $.FileSmbProperties.properties["CreatedOn"]["x-ms-xml"] = {"name": "CreationTime"};
-      $.FileSmbProperties.properties["LastWrittenOn"]["x-ms-xml"] = {"name": "LastWriteTime"};
-      $.FileSmbProperties.properties["ChangedOn"]["x-ms-xml"] = {"name": "ChangeTime"};
-      $.FileSmbProperties.properties["FileId"]["x-ms-xml"] = {"name": "../FileId"};
-      $.FileSmbProperties.properties["ParentFileId"]["x-ms-xml"] = {"name": ""};
-      delete $.FileItemDetails.properties["CreationTime"];
-      delete $.FileItemDetails.properties["LastWriteTime"];
-      delete $.FileItemDetails.properties["ChangeTime"];
-      delete $.FileItemDetails.properties["Uid"];
-      delete $.FileItemDetails.properties["Gid"];
-      delete $.FileItemDetails.properties["Mode"];
-      delete $.FileItemDetails.required;
+      $.ListItemDetails = $.FileProperty;
+      $.ListItemDetails.properties["CommonProperties"] = {"$ref": "#/definitions/ListItemCommonProperties", "x-ms-xml": {"name": "."}};
+      $.ListItemDetails.properties["Win32Properties"] = {"$ref": "#/definitions/ListItemWin32Properties", "x-ms-xml": {"name": "."}};
+      $.ListItemDetails.properties["PosixProperties"] = {"$ref": "#/definitions/ListItemPosixProperties", "x-ms-xml": {"name": "."}};
+      $.ListItemCommonProperties.properties["FileId"]["x-ms-xml"] = {"name": "../FileId"};
+      $.ListItemCommonProperties.properties["LinkCount"]["x-ms-xml"] = {"name": "../LinkCount"};
+      $.ListItemCommonProperties.properties["FileSize"]["x-ms-xml"] = {"name": "Content-Length"};
+      $.ListItemCommonProperties.properties["CreatedOn"]["x-ms-xml"] = {"name": "CreationTime"};
+      $.ListItemCommonProperties.properties["LastWrittenOn"]["x-ms-xml"] = {"name": "LastWriteTime"};
+      $.ListItemCommonProperties.properties["ChangedOn"]["x-ms-xml"] = {"name": "ChangeTime"};
+      $.ListItemCommonProperties.properties["LastAccessedOn"]["x-ms-xml"] = {"name": "LastAccessTime"};
+      $.ListItemCommonProperties.properties["LastModified"]["x-ms-xml"] = {"name": "Last-Modified"};
+      $.ListItemCommonProperties.properties["ETag"]["x-ms-xml"] = {"name": "Etag"};
+      $.ListItemWin32Properties.properties["PermissionKey"]["x-ms-xml"] = {"name": "../PermissionKey"};
+      $.ListItemWin32Properties.properties["Attributes"]["x-ms-xml"] = {"name": "../Attributes"};
+      $.ListItemPosixProperties.properties["Mode"]["x-ms-xml"] = {"name": "Mode"};
+      $.ListItemPosixProperties.properties["User"]["x-ms-xml"] = {"name": "Uid"};
+      $.ListItemPosixProperties.properties["Group"]["x-ms-xml"] = {"name": "Gid"};
+      delete $.ListItemDetails.properties["Content-Length"];
+      delete $.ListItemDetails.properties["CreationTime"];
+      delete $.ListItemDetails.properties["LastWriteTime"];
+      delete $.ListItemDetails.properties["ChangeTime"];
+      delete $.ListItemDetails.properties["LastAccessTime"];
+      delete $.ListItemDetails.properties["Last-Modified"];
+      delete $.ListItemDetails.properties["Etag"];
+      delete $.ListItemDetails.properties["Mode"];
+      delete $.ListItemDetails.properties["Uid"];
+      delete $.ListItemDetails.properties["Gid"];
+      delete $.ListItemDetails.required;
       delete $.FileProperty;
       delete $.FileItem.properties["Properties"];
       delete $.FileItem.properties["FileId"];
       delete $.FileItem.properties["Attributes"];
       delete $.FileItem.properties["PermissionKey"];
       delete $.FileItem.properties["LinkCount"];
-      delete $.FileItem.properties["FileType"];
       delete $.FileItem.required;
-      $.FileItem.properties["Details"] = {"$ref": "#/definitions/FileItemDetails", "x-ms-xml" : {"name": "Properties"}};
+      $.FileItem.properties["Details"] = {"$ref": "#/definitions/ListItemDetails", "x-ms-xml" : {"name": "Properties"}};
       $.FileItem["x-namespace"] = "_detail";
 
       delete $.DirectoryItem.properties["Properties"];
@@ -681,24 +719,51 @@ directive:
       delete $.DirectoryItem.properties["PermissionKey"];
       delete $.DirectoryItem.properties["LinkCount"];
       delete $.DirectoryItem.required;
-      $.DirectoryItemDetails = JSON.parse(JSON.stringify($.FileItemDetails));
-      delete $.DirectoryItemDetails.properties["Content-Length"];
-      $.DirectoryItem.properties["Details"] = {"$ref": "#/definitions/DirectoryItemDetails", "x-ms-xml" : {"name": "Properties"}};
+      $.DirectoryItem.properties["Details"] = {"$ref": "#/definitions/ListItemDetails", "x-ms-xml" : {"name": "Properties"}};
       $.DirectoryItem["x-namespace"] = "_detail";
 
-      delete $.FilesAndDirectoriesListSegment.properties["SymLinkItems"];
-      delete $.FilesAndDirectoriesListSegment.properties["BlockDeviceItems"];
-      delete $.FilesAndDirectoriesListSegment.properties["CharDeviceItems"];
-      delete $.FilesAndDirectoriesListSegment.properties["FifoItems"];
-      delete $.FilesAndDirectoriesListSegment.properties["SocketItems"];
-      delete $.SymLinkItem;
-      delete $.BlockDeviceItem;
-      delete $.CharDeviceItem;
-      delete $.FifoItem;
-      delete $.SocketItem;
-      delete $.FileType;
+      delete $.SymLinkItem.properties["Properties"];
+      delete $.SymLinkItem.properties["FileId"];
+      delete $.SymLinkItem.properties["LinkCount"];
+      delete $.SymLinkItem.required;
+      $.SymLinkItem.properties["Details"] = {"$ref": "#/definitions/ListItemDetails", "x-ms-xml" : {"name": "Properties"}};
+      $.SymLinkItem["x-namespace"] = "_detail";
+
+      delete $.BlockDeviceItem.properties["Properties"];
+      delete $.BlockDeviceItem.properties["FileId"];
+      delete $.BlockDeviceItem.properties["LinkCount"];
+      delete $.BlockDeviceItem.required;
+      $.BlockDeviceItem.properties["Details"] = {"$ref": "#/definitions/ListItemDetails", "x-ms-xml" : {"name": "Properties"}};
+      $.BlockDeviceItem["x-namespace"] = "_detail";
+
+      delete $.CharDeviceItem.properties["Properties"];
+      delete $.CharDeviceItem.properties["FileId"];
+      delete $.CharDeviceItem.properties["LinkCount"];
+      delete $.CharDeviceItem.required;
+      $.CharDeviceItem.properties["Details"] = {"$ref": "#/definitions/ListItemDetails", "x-ms-xml" : {"name": "Properties"}};
+      $.CharDeviceItem["x-namespace"] = "_detail";
+
+      delete $.FifoItem.properties["Properties"];
+      delete $.FifoItem.properties["FileId"];
+      delete $.FifoItem.properties["LinkCount"];
+      delete $.FifoItem.required;
+      $.FifoItem.properties["Details"] = {"$ref": "#/definitions/ListItemDetails", "x-ms-xml" : {"name": "Properties"}};
+      $.FifoItem["x-namespace"] = "_detail";
+
+      delete $.SocketItem.properties["Properties"];
+      delete $.SocketItem.properties["FileId"];
+      delete $.SocketItem.properties["LinkCount"];
+      delete $.SocketItem.required;
+      $.SocketItem.properties["Details"] = {"$ref": "#/definitions/ListItemDetails", "x-ms-xml" : {"name": "Properties"}};
+      $.SocketItem["x-namespace"] = "_detail";
+
       $.FilesAndDirectoriesListSegment.properties["DirectoryItems"]["x-ms-xml"] = {"name": "."};
       $.FilesAndDirectoriesListSegment.properties["FileItems"]["x-ms-xml"] = {"name": "."};
+      $.FilesAndDirectoriesListSegment.properties["SymLinkItems"]["x-ms-xml"] = {"name": "."};
+      $.FilesAndDirectoriesListSegment.properties["BlockDeviceItems"]["x-ms-xml"] = {"name": "."};
+      $.FilesAndDirectoriesListSegment.properties["CharDeviceItems"]["x-ms-xml"] = {"name": "."};
+      $.FilesAndDirectoriesListSegment.properties["FifoItems"]["x-ms-xml"] = {"name": "."};
+      $.FilesAndDirectoriesListSegment.properties["SocketItems"]["x-ms-xml"] = {"name": "."};
 ```
 
 ### ListHandles
@@ -1254,14 +1319,31 @@ directive:
     transform: >
       $.ApiVersion.description = "The version used for the operations to Azure storage services.";
       $.FileAttributes.description = "Attributes for a file or directory.";
-      $.FileSmbProperties.properties["PermissionKey"].description = "Permission key for the directory or file.";
-      $.FileSmbProperties.properties["Attributes"].description = "Attributes for the file or directory.";
-      $.FileSmbProperties.properties["CreatedOn"].description = "Creation time for the file or directory.";
-      $.FileSmbProperties.properties["LastWrittenOn"].description = "Last write time for the file or directory.";
-      $.FileSmbProperties.properties["ChangedOn"].description = "Changed time for the file or directory.";
-      $.FileSmbProperties.properties["FileId"].description = "The fileId of the file.";
-      $.FileSmbProperties.properties["ParentFileId"].description = "The parentId of the file.";
+      $.FileSmbProperties.properties["PermissionKey"].description = "SMB only. Permission key for the file or directory.";
+      $.FileSmbProperties.properties["Attributes"].description = "SMB only. Win32 attributes for the file or directory.";
+      $.FileSmbProperties.properties["CreatedOn"].description = "Creation time of the file or directory.";
+      $.FileSmbProperties.properties["LastWrittenOn"].description = "Last write time of the file or directory.";
+      $.FileSmbProperties.properties["ChangedOn"].description = "Changed time of the file or directory.";
+      $.FileSmbProperties.properties["FileId"].description = "The FileID of the file or directory.";
+      $.FileSmbProperties.properties["ParentFileId"].description = "The FileID of the parent directory.";
       $.FileSmbProperties.description = "The SMB related properties for the file.";
+      $.ListItemWin32Properties.properties["PermissionKey"].description = "Permission key for the file or directory.";
+      $.ListItemWin32Properties.properties["Attributes"].description = "Win32 attributes for the file or directory.";
+      $.ListItemWin32Properties.description = "The Win32 properties of a listed item.";
+      $.ListItemPosixProperties.properties["Mode"].description = "Posix permissions on the item.";
+      $.ListItemPosixProperties.properties["User"].description = "Posix user identifier of the item owner.";
+      $.ListItemPosixProperties.properties["Group"].description = "Posix group identifier of the item owner.";
+      $.ListItemPosixProperties.description = "The Posix properties of a listed item.";
+      $.ListItemCommonProperties.properties["FileId"].description = "The file identifier of the item.";
+      $.ListItemCommonProperties.properties["LinkCount"].description = "The hardlink count of the item.";
+      $.ListItemCommonProperties.properties["FileSize"].description = "For a symbolic link this represents the size of the link text. For a regular file this represents the length of the file - This value may not be up-to-date since the client may have modified the file locally and may not reflect accurately until the handle is closed or in case of SMB protocol enabled shares, when SMB the op-lock is broken. To retrieve current property values, call Get File Properties.";
+      $.ListItemCommonProperties.properties["CreatedOn"].description = "The time the item was created.";
+      $.ListItemCommonProperties.properties["LastWrittenOn"].description = "The time the item was last written to.";
+      $.ListItemCommonProperties.properties["ChangedOn"].description = "The time the item was last changed.";
+      $.ListItemCommonProperties.properties["LastAccessedOn"].description = "The time the item was last accessed.";
+      $.ListItemCommonProperties.properties["LastModified"].description = "The date and time the item was last modified.";
+      $.ListItemCommonProperties.properties["ETag"].description = "The ETag contains a value which represents the version of the item, in quotes.";
+      $.ListItemCommonProperties.description = "The common properties of a listed item.";
       $.AccessTier.description = "Specifies the access tier of the share.";
       $.Metadata.description = "A set of name-value pairs associated with the share or file.";
       $.CopyStatus.description = "Status of a copy operation.";
@@ -1313,12 +1395,11 @@ directive:
       $.ShareItemInternal.properties["Snapshot"].description = "The snapshot of the share.";
       $.ShareItemInternal.properties["Deleted"].description = "True if the share is deleted.";
       $.ShareItemInternal.properties["Version"].description = "The version of the share";
-      $.FileItemDetails.properties["LastAccessTime"].description = "The time the file was last accessed.";
-      $.FileItemDetails.properties["Last-Modified"].description = "The date and time the file was last modified.";
-      $.FileItemDetails.properties["Etag"].description = "The ETag contains a value which represents the version of the file, in quotes.";
-      $.DirectoryItemDetails.properties["LastAccessTime"].description = "The time the directory was last accessed.";
-      $.DirectoryItemDetails.properties["Last-Modified"].description = "The date and time the directory was last modified.";
-      $.DirectoryItemDetails.properties["Etag"].description = "The ETag contains a value which represents the version of the directory, in quotes.";
+      $.SymLinkItem.properties["LinkText"].description = "The link text contained in the symbolic link.";
+      $.BlockDeviceItem.properties["DeviceMajor"].description = "The major device number of the block device.";
+      $.BlockDeviceItem.properties["DeviceMinor"].description = "The minor device number of the block device.";
+      $.CharDeviceItem.properties["DeviceMajor"].description = "The major device number of the character device.";
+      $.CharDeviceItem.properties["DeviceMinor"].description = "The minor device number of the character device.";
       $.SetServicePropertiesResult.description = "Response type for #Azure::Storage::Files::Shares::ShareServiceClient::SetProperties.";
       $.SetDirectoryMetadataResult.description = "Response type for #Azure::Storage::Files::Shares::ShareDirectoryClient::SetMetadata.";
       $.SetFileMetadataResult.description = "Response type for #Azure::Storage::Files::Shares::ShareFileClient::SetMetadata.";

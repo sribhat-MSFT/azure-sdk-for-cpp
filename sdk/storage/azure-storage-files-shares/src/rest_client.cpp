@@ -62,15 +62,23 @@ std::string ListFilesIncludeFlagsToString(
       Azure::Storage::Files::Shares::Models::ListFilesIncludeFlags::ETag,
       Azure::Storage::Files::Shares::Models::ListFilesIncludeFlags::Attributes,
       Azure::Storage::Files::Shares::Models::ListFilesIncludeFlags::PermissionKey,
+      Azure::Storage::Files::Shares::Models::ListFilesIncludeFlags::NfsAttributes,
+      Azure::Storage::Files::Shares::Models::ListFilesIncludeFlags::LinkCount,
+      Azure::Storage::Files::Shares::Models::ListFilesIncludeFlags::Permissions,
+      Azure::Storage::Files::Shares::Models::ListFilesIncludeFlags::All,
   };
   const char* stringList[] = {
       "Timestamps",
       "Etag",
       "Attributes",
       "PermissionKey",
+      "NfsAttributes",
+      "LinkCount",
+      "Permissions",
+      "All",
   };
   std::string ret;
-  for (size_t i = 0; i < 4; ++i)
+  for (size_t i = 0; i < 8; ++i)
   {
     if ((val & valueList[i]) == valueList[i])
     {
@@ -190,6 +198,10 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
     const NfsFileType NfsFileType::Regular("Regular");
     const NfsFileType NfsFileType::Directory("Directory");
     const NfsFileType NfsFileType::SymLink("SymLink");
+    const NfsFileType NfsFileType::BlockDevice("BlockDevice");
+    const NfsFileType NfsFileType::CharacterDevice("CharacterDevice");
+    const NfsFileType NfsFileType::Socket("Socket");
+    const NfsFileType NfsFileType::Fifo("Fifo");
     namespace _detail {
       const AccessRight AccessRight::Read("Read");
       const AccessRight AccessRight::Write("Write");
@@ -378,7 +390,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
       request.SetHeader("Content-Length", std::to_string(requestBody.Length()));
       request.GetUrl().AppendQueryParameter("restype", "service");
       request.GetUrl().AppendQueryParameter("comp", "properties");
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (options.FileRequestIntent.HasValue()
           && !options.FileRequestIntent.Value().ToString().empty())
       {
@@ -403,7 +415,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
       auto request = Core::Http::Request(Core::Http::HttpMethod::Get, url);
       request.GetUrl().AppendQueryParameter("restype", "service");
       request.GetUrl().AppendQueryParameter("comp", "properties");
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (options.FileRequestIntent.HasValue()
           && !options.FileRequestIntent.Value().ToString().empty())
       {
@@ -698,7 +710,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
             _internal::UrlEncodeQueryParameter(
                 ListSharesIncludeFlagsToString(options.Include.Value())));
       }
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (options.FileRequestIntent.HasValue()
           && !options.FileRequestIntent.Value().ToString().empty())
       {
@@ -1157,7 +1169,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
       request.SetHeader("Content-Length", std::to_string(requestBody.Length()));
       request.GetUrl().AppendQueryParameter("restype", "service");
       request.GetUrl().AppendQueryParameter("comp", "userdelegationkey");
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       auto pRawResponse = pipeline.Send(request, context);
       auto httpStatusCode = pRawResponse->GetStatusCode();
       if (httpStatusCode != Core::Http::HttpStatusCode::Ok)
@@ -1291,7 +1303,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
       {
         request.SetHeader("x-ms-access-tier", options.AccessTier.Value().ToString());
       }
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (options.EnabledProtocols.HasValue()
           && !options.EnabledProtocols.Value().ToString().empty())
       {
@@ -1390,7 +1402,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
         request.GetUrl().AppendQueryParameter(
             "sharesnapshot", _internal::UrlEncodeQueryParameter(options.Sharesnapshot.Value()));
       }
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (options.LeaseId.HasValue() && !options.LeaseId.Value().empty())
       {
         request.SetHeader("x-ms-lease-id", options.LeaseId.Value());
@@ -1547,7 +1559,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
         request.GetUrl().AppendQueryParameter(
             "sharesnapshot", _internal::UrlEncodeQueryParameter(options.Sharesnapshot.Value()));
       }
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (options.DeleteSnapshots.HasValue() && !options.DeleteSnapshots.Value().ToString().empty())
       {
         request.SetHeader("x-ms-delete-snapshots", options.DeleteSnapshots.Value().ToString());
@@ -1598,7 +1610,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
       {
         request.SetHeader("x-ms-proposed-lease-id", options.ProposedLeaseId.Value());
       }
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (options.Sharesnapshot.HasValue() && !options.Sharesnapshot.Value().empty())
       {
         request.GetUrl().AppendQueryParameter(
@@ -1637,7 +1649,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
       {
         request.SetHeader("x-ms-lease-id", options.LeaseId);
       }
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (options.Sharesnapshot.HasValue() && !options.Sharesnapshot.Value().empty())
       {
         request.GetUrl().AppendQueryParameter(
@@ -1679,7 +1691,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
       {
         request.SetHeader("x-ms-proposed-lease-id", options.ProposedLeaseId.Value());
       }
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (options.Sharesnapshot.HasValue() && !options.Sharesnapshot.Value().empty())
       {
         request.GetUrl().AppendQueryParameter(
@@ -1718,7 +1730,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
       {
         request.SetHeader("x-ms-lease-id", options.LeaseId);
       }
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (options.Sharesnapshot.HasValue() && !options.Sharesnapshot.Value().empty())
       {
         request.GetUrl().AppendQueryParameter(
@@ -1761,7 +1773,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
       {
         request.SetHeader("x-ms-lease-id", options.LeaseId.Value());
       }
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (options.Sharesnapshot.HasValue() && !options.Sharesnapshot.Value().empty())
       {
         request.GetUrl().AppendQueryParameter(
@@ -1799,7 +1811,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
       {
         request.SetHeader("x-ms-meta-" + p.first, p.second);
       }
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (options.FileRequestIntent.HasValue()
           && !options.FileRequestIntent.Value().ToString().empty())
       {
@@ -1842,7 +1854,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
       request.SetHeader("Content-Length", std::to_string(requestBody.Length()));
       request.GetUrl().AppendQueryParameter("restype", "share");
       request.GetUrl().AppendQueryParameter("comp", "filepermission");
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (options.FileRequestIntent.HasValue()
           && !options.FileRequestIntent.Value().ToString().empty())
       {
@@ -1878,7 +1890,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
         request.SetHeader(
             "x-ms-file-permission-format", options.FilePermissionFormat.Value().ToString());
       }
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (options.FileRequestIntent.HasValue()
           && !options.FileRequestIntent.Value().ToString().empty())
       {
@@ -1913,7 +1925,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
       auto request = Core::Http::Request(Core::Http::HttpMethod::Put, url);
       request.GetUrl().AppendQueryParameter("restype", "share");
       request.GetUrl().AppendQueryParameter("comp", "properties");
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (options.Quota.HasValue())
       {
         request.SetHeader("x-ms-share-quota", std::to_string(options.Quota.Value()));
@@ -2044,7 +2056,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
       {
         request.SetHeader("x-ms-meta-" + p.first, p.second);
       }
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (options.LeaseId.HasValue() && !options.LeaseId.Value().empty())
       {
         request.SetHeader("x-ms-lease-id", options.LeaseId.Value());
@@ -2075,7 +2087,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
       auto request = Core::Http::Request(Core::Http::HttpMethod::Get, url);
       request.GetUrl().AppendQueryParameter("restype", "share");
       request.GetUrl().AppendQueryParameter("comp", "acl");
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (options.LeaseId.HasValue() && !options.LeaseId.Value().empty())
       {
         request.SetHeader("x-ms-lease-id", options.LeaseId.Value());
@@ -2227,7 +2239,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
       request.SetHeader("Content-Length", std::to_string(requestBody.Length()));
       request.GetUrl().AppendQueryParameter("restype", "share");
       request.GetUrl().AppendQueryParameter("comp", "acl");
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (options.LeaseId.HasValue() && !options.LeaseId.Value().empty())
       {
         request.SetHeader("x-ms-lease-id", options.LeaseId.Value());
@@ -2259,7 +2271,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
       auto request = Core::Http::Request(Core::Http::HttpMethod::Get, url);
       request.GetUrl().AppendQueryParameter("restype", "share");
       request.GetUrl().AppendQueryParameter("comp", "stats");
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (options.LeaseId.HasValue() && !options.LeaseId.Value().empty())
       {
         request.SetHeader("x-ms-lease-id", options.LeaseId.Value());
@@ -2350,7 +2362,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
       {
         request.SetHeader("x-ms-meta-" + p.first, p.second);
       }
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (options.FilePermission.HasValue() && !options.FilePermission.Value().empty())
       {
         request.SetHeader("x-ms-file-permission", options.FilePermission.Value());
@@ -2484,7 +2496,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
         request.GetUrl().AppendQueryParameter(
             "sharesnapshot", _internal::UrlEncodeQueryParameter(options.Sharesnapshot.Value()));
       }
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (options.FileRequestIntent.HasValue()
           && !options.FileRequestIntent.Value().ToString().empty())
       {
@@ -2571,7 +2583,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
         request.SetHeader(
             "x-ms-allow-trailing-dot", options.AllowTrailingDot.Value() ? "true" : "false");
       }
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (options.FileRequestIntent.HasValue()
           && !options.FileRequestIntent.Value().ToString().empty())
       {
@@ -2595,7 +2607,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
       auto request = Core::Http::Request(Core::Http::HttpMethod::Put, url);
       request.GetUrl().AppendQueryParameter("restype", "directory");
       request.GetUrl().AppendQueryParameter("comp", "properties");
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (options.FilePermission.HasValue() && !options.FilePermission.Value().empty())
       {
         request.SetHeader("x-ms-file-permission", options.FilePermission.Value());
@@ -2718,7 +2730,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
       {
         request.SetHeader("x-ms-meta-" + p.first, p.second);
       }
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (options.AllowTrailingDot.HasValue())
       {
         request.SetHeader(
@@ -2772,7 +2784,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
         request.GetUrl().AppendQueryParameter(
             "maxresults", std::to_string(options.MaxResults.Value()));
       }
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (options.Include.HasValue()
           && !ListFilesIncludeFlagsToString(options.Include.Value()).empty())
       {
@@ -2817,18 +2829,31 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
           kEntries,
           kDirectory,
           kName,
+          kFileId,
+          kLinkCount,
           kProperties,
+          kContentLength,
+          kCreationTime,
+          kLastWriteTime,
+          kChangeTime,
           kLastAccessTime,
           kLastModified,
           kEtag,
           kPermissionKey,
           kAttributes,
-          kCreationTime,
-          kLastWriteTime,
-          kChangeTime,
-          kFileId,
+          kMode,
+          kUid,
+          kGid,
           kFile,
-          kContentLength,
+          kFileType,
+          kSymLink,
+          kLinkText,
+          kBlockDevice,
+          kDeviceMajor,
+          kDeviceMinor,
+          kCharDevice,
+          kFifo,
+          kSocket,
           kNextMarker,
           kDirectoryId,
         };
@@ -2840,24 +2865,42 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
             {"Entries", XmlTagEnum::kEntries},
             {"Directory", XmlTagEnum::kDirectory},
             {"Name", XmlTagEnum::kName},
+            {"FileId", XmlTagEnum::kFileId},
+            {"LinkCount", XmlTagEnum::kLinkCount},
             {"Properties", XmlTagEnum::kProperties},
+            {"Content-Length", XmlTagEnum::kContentLength},
+            {"CreationTime", XmlTagEnum::kCreationTime},
+            {"LastWriteTime", XmlTagEnum::kLastWriteTime},
+            {"ChangeTime", XmlTagEnum::kChangeTime},
             {"LastAccessTime", XmlTagEnum::kLastAccessTime},
             {"Last-Modified", XmlTagEnum::kLastModified},
             {"Etag", XmlTagEnum::kEtag},
             {"PermissionKey", XmlTagEnum::kPermissionKey},
             {"Attributes", XmlTagEnum::kAttributes},
-            {"CreationTime", XmlTagEnum::kCreationTime},
-            {"LastWriteTime", XmlTagEnum::kLastWriteTime},
-            {"ChangeTime", XmlTagEnum::kChangeTime},
-            {"FileId", XmlTagEnum::kFileId},
+            {"Mode", XmlTagEnum::kMode},
+            {"Uid", XmlTagEnum::kUid},
+            {"Gid", XmlTagEnum::kGid},
             {"File", XmlTagEnum::kFile},
-            {"Content-Length", XmlTagEnum::kContentLength},
+            {"FileType", XmlTagEnum::kFileType},
+            {"SymLink", XmlTagEnum::kSymLink},
+            {"LinkText", XmlTagEnum::kLinkText},
+            {"BlockDevice", XmlTagEnum::kBlockDevice},
+            {"DeviceMajor", XmlTagEnum::kDeviceMajor},
+            {"DeviceMinor", XmlTagEnum::kDeviceMinor},
+            {"CharDevice", XmlTagEnum::kCharDevice},
+            {"Fifo", XmlTagEnum::kFifo},
+            {"Socket", XmlTagEnum::kSocket},
             {"NextMarker", XmlTagEnum::kNextMarker},
             {"DirectoryId", XmlTagEnum::kDirectoryId},
         };
         std::vector<XmlTagEnum> xmlPath;
         Models::_detail::DirectoryItem vectorElement1;
         Models::_detail::FileItem vectorElement2;
+        Models::_detail::SymLinkItem vectorElement3;
+        Models::_detail::BlockDeviceItem vectorElement4;
+        Models::_detail::CharDeviceItem vectorElement5;
+        Models::_detail::FifoItem vectorElement6;
+        Models::_detail::SocketItem vectorElement7;
         while (true)
         {
           auto node = reader.Read();
@@ -2897,49 +2940,33 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
               vectorElement1.Name.Content = node.Value;
             }
             else if (
+                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kDirectory
+                && xmlPath[3] == XmlTagEnum::kFileId)
+            {
+              vectorElement1.Details.CommonProperties.FileId = node.Value;
+            }
+            else if (
+                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kDirectory
+                && xmlPath[3] == XmlTagEnum::kLinkCount)
+            {
+              vectorElement1.Details.CommonProperties.LinkCount = std::stoll(node.Value);
+            }
+            else if (
                 xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
                 && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kDirectory
                 && xmlPath[3] == XmlTagEnum::kProperties
-                && xmlPath[4] == XmlTagEnum::kLastAccessTime)
+                && xmlPath[4] == XmlTagEnum::kContentLength)
             {
-              vectorElement1.Details.LastAccessedOn
-                  = DateTime::Parse(node.Value, Azure::DateTime::DateFormat::Rfc3339);
-            }
-            else if (
-                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
-                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kDirectory
-                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kLastModified)
-            {
-              vectorElement1.Details.LastModified
-                  = DateTime::Parse(node.Value, Azure::DateTime::DateFormat::Rfc1123);
-            }
-            else if (
-                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
-                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kDirectory
-                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kEtag)
-            {
-              vectorElement1.Details.Etag = ETag(node.Value);
-            }
-            else if (
-                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
-                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kDirectory
-                && xmlPath[3] == XmlTagEnum::kPermissionKey)
-            {
-              vectorElement1.Details.SmbProperties.PermissionKey = node.Value;
-            }
-            else if (
-                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
-                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kDirectory
-                && xmlPath[3] == XmlTagEnum::kAttributes)
-            {
-              vectorElement1.Details.SmbProperties.Attributes = Models::FileAttributes(node.Value);
+              vectorElement1.Details.CommonProperties.FileSize = std::stoll(node.Value);
             }
             else if (
                 xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
                 && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kDirectory
                 && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kCreationTime)
             {
-              vectorElement1.Details.SmbProperties.CreatedOn
+              vectorElement1.Details.CommonProperties.CreatedOn
                   = DateTime::Parse(node.Value, Azure::DateTime::DateFormat::Rfc3339);
             }
             else if (
@@ -2948,7 +2975,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
                 && xmlPath[3] == XmlTagEnum::kProperties
                 && xmlPath[4] == XmlTagEnum::kLastWriteTime)
             {
-              vectorElement1.Details.SmbProperties.LastWrittenOn
+              vectorElement1.Details.CommonProperties.LastWrittenOn
                   = DateTime::Parse(node.Value, Azure::DateTime::DateFormat::Rfc3339);
             }
             else if (
@@ -2956,15 +2983,68 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
                 && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kDirectory
                 && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kChangeTime)
             {
-              vectorElement1.Details.SmbProperties.ChangedOn
+              vectorElement1.Details.CommonProperties.ChangedOn
                   = DateTime::Parse(node.Value, Azure::DateTime::DateFormat::Rfc3339);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kDirectory
+                && xmlPath[3] == XmlTagEnum::kProperties
+                && xmlPath[4] == XmlTagEnum::kLastAccessTime)
+            {
+              vectorElement1.Details.CommonProperties.LastAccessedOn
+                  = DateTime::Parse(node.Value, Azure::DateTime::DateFormat::Rfc3339);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kDirectory
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kLastModified)
+            {
+              vectorElement1.Details.CommonProperties.LastModified
+                  = DateTime::Parse(node.Value, Azure::DateTime::DateFormat::Rfc1123);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kDirectory
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kEtag)
+            {
+              vectorElement1.Details.CommonProperties.ETag = ETag(node.Value);
             }
             else if (
                 xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
                 && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kDirectory
-                && xmlPath[3] == XmlTagEnum::kFileId)
+                && xmlPath[3] == XmlTagEnum::kPermissionKey)
             {
-              vectorElement1.Details.SmbProperties.FileId = node.Value;
+              vectorElement1.Details.Win32Properties.PermissionKey = node.Value;
+            }
+            else if (
+                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kDirectory
+                && xmlPath[3] == XmlTagEnum::kAttributes)
+            {
+              vectorElement1.Details.Win32Properties.Attributes
+                  = Models::FileAttributes(node.Value);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kDirectory
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kMode)
+            {
+              vectorElement1.Details.PosixProperties.Mode = node.Value;
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kDirectory
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kUid)
+            {
+              vectorElement1.Details.PosixProperties.User = node.Value;
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kDirectory
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kGid)
+            {
+              vectorElement1.Details.PosixProperties.Group = node.Value;
             }
             else if (
                 xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
@@ -2974,57 +3054,40 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
               vectorElement2.Name.Content = node.Value;
             }
             else if (
+                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kFile
+                && xmlPath[3] == XmlTagEnum::kFileType)
+            {
+              vectorElement2.FileType = Models::NfsFileType(node.Value);
+            }
+            else if (
+                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kFile
+                && xmlPath[3] == XmlTagEnum::kFileId)
+            {
+              vectorElement2.Details.CommonProperties.FileId = node.Value;
+            }
+            else if (
+                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kFile
+                && xmlPath[3] == XmlTagEnum::kLinkCount)
+            {
+              vectorElement2.Details.CommonProperties.LinkCount = std::stoll(node.Value);
+            }
+            else if (
                 xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
                 && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kFile
                 && xmlPath[3] == XmlTagEnum::kProperties
                 && xmlPath[4] == XmlTagEnum::kContentLength)
             {
-              vectorElement2.Details.FileSize = std::stoll(node.Value);
-            }
-            else if (
-                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
-                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kFile
-                && xmlPath[3] == XmlTagEnum::kProperties
-                && xmlPath[4] == XmlTagEnum::kLastAccessTime)
-            {
-              vectorElement2.Details.LastAccessedOn
-                  = DateTime::Parse(node.Value, Azure::DateTime::DateFormat::Rfc3339);
-            }
-            else if (
-                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
-                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kFile
-                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kLastModified)
-            {
-              vectorElement2.Details.LastModified
-                  = DateTime::Parse(node.Value, Azure::DateTime::DateFormat::Rfc1123);
-            }
-            else if (
-                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
-                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kFile
-                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kEtag)
-            {
-              vectorElement2.Details.Etag = ETag(node.Value);
-            }
-            else if (
-                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
-                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kFile
-                && xmlPath[3] == XmlTagEnum::kPermissionKey)
-            {
-              vectorElement2.Details.SmbProperties.PermissionKey = node.Value;
-            }
-            else if (
-                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
-                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kFile
-                && xmlPath[3] == XmlTagEnum::kAttributes)
-            {
-              vectorElement2.Details.SmbProperties.Attributes = Models::FileAttributes(node.Value);
+              vectorElement2.Details.CommonProperties.FileSize = std::stoll(node.Value);
             }
             else if (
                 xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
                 && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kFile
                 && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kCreationTime)
             {
-              vectorElement2.Details.SmbProperties.CreatedOn
+              vectorElement2.Details.CommonProperties.CreatedOn
                   = DateTime::Parse(node.Value, Azure::DateTime::DateFormat::Rfc3339);
             }
             else if (
@@ -3033,7 +3096,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
                 && xmlPath[3] == XmlTagEnum::kProperties
                 && xmlPath[4] == XmlTagEnum::kLastWriteTime)
             {
-              vectorElement2.Details.SmbProperties.LastWrittenOn
+              vectorElement2.Details.CommonProperties.LastWrittenOn
                   = DateTime::Parse(node.Value, Azure::DateTime::DateFormat::Rfc3339);
             }
             else if (
@@ -3041,15 +3104,673 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
                 && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kFile
                 && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kChangeTime)
             {
-              vectorElement2.Details.SmbProperties.ChangedOn
+              vectorElement2.Details.CommonProperties.ChangedOn
                   = DateTime::Parse(node.Value, Azure::DateTime::DateFormat::Rfc3339);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kFile
+                && xmlPath[3] == XmlTagEnum::kProperties
+                && xmlPath[4] == XmlTagEnum::kLastAccessTime)
+            {
+              vectorElement2.Details.CommonProperties.LastAccessedOn
+                  = DateTime::Parse(node.Value, Azure::DateTime::DateFormat::Rfc3339);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kFile
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kLastModified)
+            {
+              vectorElement2.Details.CommonProperties.LastModified
+                  = DateTime::Parse(node.Value, Azure::DateTime::DateFormat::Rfc1123);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kFile
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kEtag)
+            {
+              vectorElement2.Details.CommonProperties.ETag = ETag(node.Value);
             }
             else if (
                 xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
                 && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kFile
+                && xmlPath[3] == XmlTagEnum::kPermissionKey)
+            {
+              vectorElement2.Details.Win32Properties.PermissionKey = node.Value;
+            }
+            else if (
+                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kFile
+                && xmlPath[3] == XmlTagEnum::kAttributes)
+            {
+              vectorElement2.Details.Win32Properties.Attributes
+                  = Models::FileAttributes(node.Value);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kFile
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kMode)
+            {
+              vectorElement2.Details.PosixProperties.Mode = node.Value;
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kFile
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kUid)
+            {
+              vectorElement2.Details.PosixProperties.User = node.Value;
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kFile
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kGid)
+            {
+              vectorElement2.Details.PosixProperties.Group = node.Value;
+            }
+            else if (
+                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kSymLink
+                && xmlPath[3] == XmlTagEnum::kName)
+            {
+              vectorElement3.Name.Content = node.Value;
+            }
+            else if (
+                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kSymLink
+                && xmlPath[3] == XmlTagEnum::kLinkText)
+            {
+              vectorElement3.LinkText = node.Value;
+            }
+            else if (
+                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kSymLink
                 && xmlPath[3] == XmlTagEnum::kFileId)
             {
-              vectorElement2.Details.SmbProperties.FileId = node.Value;
+              vectorElement3.Details.CommonProperties.FileId = node.Value;
+            }
+            else if (
+                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kSymLink
+                && xmlPath[3] == XmlTagEnum::kLinkCount)
+            {
+              vectorElement3.Details.CommonProperties.LinkCount = std::stoll(node.Value);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kSymLink
+                && xmlPath[3] == XmlTagEnum::kProperties
+                && xmlPath[4] == XmlTagEnum::kContentLength)
+            {
+              vectorElement3.Details.CommonProperties.FileSize = std::stoll(node.Value);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kSymLink
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kCreationTime)
+            {
+              vectorElement3.Details.CommonProperties.CreatedOn
+                  = DateTime::Parse(node.Value, Azure::DateTime::DateFormat::Rfc3339);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kSymLink
+                && xmlPath[3] == XmlTagEnum::kProperties
+                && xmlPath[4] == XmlTagEnum::kLastWriteTime)
+            {
+              vectorElement3.Details.CommonProperties.LastWrittenOn
+                  = DateTime::Parse(node.Value, Azure::DateTime::DateFormat::Rfc3339);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kSymLink
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kChangeTime)
+            {
+              vectorElement3.Details.CommonProperties.ChangedOn
+                  = DateTime::Parse(node.Value, Azure::DateTime::DateFormat::Rfc3339);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kSymLink
+                && xmlPath[3] == XmlTagEnum::kProperties
+                && xmlPath[4] == XmlTagEnum::kLastAccessTime)
+            {
+              vectorElement3.Details.CommonProperties.LastAccessedOn
+                  = DateTime::Parse(node.Value, Azure::DateTime::DateFormat::Rfc3339);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kSymLink
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kLastModified)
+            {
+              vectorElement3.Details.CommonProperties.LastModified
+                  = DateTime::Parse(node.Value, Azure::DateTime::DateFormat::Rfc1123);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kSymLink
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kEtag)
+            {
+              vectorElement3.Details.CommonProperties.ETag = ETag(node.Value);
+            }
+            else if (
+                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kSymLink
+                && xmlPath[3] == XmlTagEnum::kPermissionKey)
+            {
+              vectorElement3.Details.Win32Properties.PermissionKey = node.Value;
+            }
+            else if (
+                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kSymLink
+                && xmlPath[3] == XmlTagEnum::kAttributes)
+            {
+              vectorElement3.Details.Win32Properties.Attributes
+                  = Models::FileAttributes(node.Value);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kSymLink
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kMode)
+            {
+              vectorElement3.Details.PosixProperties.Mode = node.Value;
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kSymLink
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kUid)
+            {
+              vectorElement3.Details.PosixProperties.User = node.Value;
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kSymLink
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kGid)
+            {
+              vectorElement3.Details.PosixProperties.Group = node.Value;
+            }
+            else if (
+                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kBlockDevice
+                && xmlPath[3] == XmlTagEnum::kName)
+            {
+              vectorElement4.Name.Content = node.Value;
+            }
+            else if (
+                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kBlockDevice
+                && xmlPath[3] == XmlTagEnum::kDeviceMajor)
+            {
+              vectorElement4.DeviceMajor = std::stoll(node.Value);
+            }
+            else if (
+                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kBlockDevice
+                && xmlPath[3] == XmlTagEnum::kDeviceMinor)
+            {
+              vectorElement4.DeviceMinor = std::stoll(node.Value);
+            }
+            else if (
+                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kBlockDevice
+                && xmlPath[3] == XmlTagEnum::kFileId)
+            {
+              vectorElement4.Details.CommonProperties.FileId = node.Value;
+            }
+            else if (
+                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kBlockDevice
+                && xmlPath[3] == XmlTagEnum::kLinkCount)
+            {
+              vectorElement4.Details.CommonProperties.LinkCount = std::stoll(node.Value);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kBlockDevice
+                && xmlPath[3] == XmlTagEnum::kProperties
+                && xmlPath[4] == XmlTagEnum::kContentLength)
+            {
+              vectorElement4.Details.CommonProperties.FileSize = std::stoll(node.Value);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kBlockDevice
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kCreationTime)
+            {
+              vectorElement4.Details.CommonProperties.CreatedOn
+                  = DateTime::Parse(node.Value, Azure::DateTime::DateFormat::Rfc3339);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kBlockDevice
+                && xmlPath[3] == XmlTagEnum::kProperties
+                && xmlPath[4] == XmlTagEnum::kLastWriteTime)
+            {
+              vectorElement4.Details.CommonProperties.LastWrittenOn
+                  = DateTime::Parse(node.Value, Azure::DateTime::DateFormat::Rfc3339);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kBlockDevice
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kChangeTime)
+            {
+              vectorElement4.Details.CommonProperties.ChangedOn
+                  = DateTime::Parse(node.Value, Azure::DateTime::DateFormat::Rfc3339);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kBlockDevice
+                && xmlPath[3] == XmlTagEnum::kProperties
+                && xmlPath[4] == XmlTagEnum::kLastAccessTime)
+            {
+              vectorElement4.Details.CommonProperties.LastAccessedOn
+                  = DateTime::Parse(node.Value, Azure::DateTime::DateFormat::Rfc3339);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kBlockDevice
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kLastModified)
+            {
+              vectorElement4.Details.CommonProperties.LastModified
+                  = DateTime::Parse(node.Value, Azure::DateTime::DateFormat::Rfc1123);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kBlockDevice
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kEtag)
+            {
+              vectorElement4.Details.CommonProperties.ETag = ETag(node.Value);
+            }
+            else if (
+                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kBlockDevice
+                && xmlPath[3] == XmlTagEnum::kPermissionKey)
+            {
+              vectorElement4.Details.Win32Properties.PermissionKey = node.Value;
+            }
+            else if (
+                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kBlockDevice
+                && xmlPath[3] == XmlTagEnum::kAttributes)
+            {
+              vectorElement4.Details.Win32Properties.Attributes
+                  = Models::FileAttributes(node.Value);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kBlockDevice
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kMode)
+            {
+              vectorElement4.Details.PosixProperties.Mode = node.Value;
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kBlockDevice
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kUid)
+            {
+              vectorElement4.Details.PosixProperties.User = node.Value;
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kBlockDevice
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kGid)
+            {
+              vectorElement4.Details.PosixProperties.Group = node.Value;
+            }
+            else if (
+                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kCharDevice
+                && xmlPath[3] == XmlTagEnum::kName)
+            {
+              vectorElement5.Name.Content = node.Value;
+            }
+            else if (
+                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kCharDevice
+                && xmlPath[3] == XmlTagEnum::kDeviceMajor)
+            {
+              vectorElement5.DeviceMajor = std::stoll(node.Value);
+            }
+            else if (
+                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kCharDevice
+                && xmlPath[3] == XmlTagEnum::kDeviceMinor)
+            {
+              vectorElement5.DeviceMinor = std::stoll(node.Value);
+            }
+            else if (
+                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kCharDevice
+                && xmlPath[3] == XmlTagEnum::kFileId)
+            {
+              vectorElement5.Details.CommonProperties.FileId = node.Value;
+            }
+            else if (
+                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kCharDevice
+                && xmlPath[3] == XmlTagEnum::kLinkCount)
+            {
+              vectorElement5.Details.CommonProperties.LinkCount = std::stoll(node.Value);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kCharDevice
+                && xmlPath[3] == XmlTagEnum::kProperties
+                && xmlPath[4] == XmlTagEnum::kContentLength)
+            {
+              vectorElement5.Details.CommonProperties.FileSize = std::stoll(node.Value);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kCharDevice
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kCreationTime)
+            {
+              vectorElement5.Details.CommonProperties.CreatedOn
+                  = DateTime::Parse(node.Value, Azure::DateTime::DateFormat::Rfc3339);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kCharDevice
+                && xmlPath[3] == XmlTagEnum::kProperties
+                && xmlPath[4] == XmlTagEnum::kLastWriteTime)
+            {
+              vectorElement5.Details.CommonProperties.LastWrittenOn
+                  = DateTime::Parse(node.Value, Azure::DateTime::DateFormat::Rfc3339);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kCharDevice
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kChangeTime)
+            {
+              vectorElement5.Details.CommonProperties.ChangedOn
+                  = DateTime::Parse(node.Value, Azure::DateTime::DateFormat::Rfc3339);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kCharDevice
+                && xmlPath[3] == XmlTagEnum::kProperties
+                && xmlPath[4] == XmlTagEnum::kLastAccessTime)
+            {
+              vectorElement5.Details.CommonProperties.LastAccessedOn
+                  = DateTime::Parse(node.Value, Azure::DateTime::DateFormat::Rfc3339);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kCharDevice
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kLastModified)
+            {
+              vectorElement5.Details.CommonProperties.LastModified
+                  = DateTime::Parse(node.Value, Azure::DateTime::DateFormat::Rfc1123);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kCharDevice
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kEtag)
+            {
+              vectorElement5.Details.CommonProperties.ETag = ETag(node.Value);
+            }
+            else if (
+                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kCharDevice
+                && xmlPath[3] == XmlTagEnum::kPermissionKey)
+            {
+              vectorElement5.Details.Win32Properties.PermissionKey = node.Value;
+            }
+            else if (
+                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kCharDevice
+                && xmlPath[3] == XmlTagEnum::kAttributes)
+            {
+              vectorElement5.Details.Win32Properties.Attributes
+                  = Models::FileAttributes(node.Value);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kCharDevice
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kMode)
+            {
+              vectorElement5.Details.PosixProperties.Mode = node.Value;
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kCharDevice
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kUid)
+            {
+              vectorElement5.Details.PosixProperties.User = node.Value;
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kCharDevice
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kGid)
+            {
+              vectorElement5.Details.PosixProperties.Group = node.Value;
+            }
+            else if (
+                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kFifo
+                && xmlPath[3] == XmlTagEnum::kName)
+            {
+              vectorElement6.Name.Content = node.Value;
+            }
+            else if (
+                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kFifo
+                && xmlPath[3] == XmlTagEnum::kFileId)
+            {
+              vectorElement6.Details.CommonProperties.FileId = node.Value;
+            }
+            else if (
+                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kFifo
+                && xmlPath[3] == XmlTagEnum::kLinkCount)
+            {
+              vectorElement6.Details.CommonProperties.LinkCount = std::stoll(node.Value);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kFifo
+                && xmlPath[3] == XmlTagEnum::kProperties
+                && xmlPath[4] == XmlTagEnum::kContentLength)
+            {
+              vectorElement6.Details.CommonProperties.FileSize = std::stoll(node.Value);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kFifo
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kCreationTime)
+            {
+              vectorElement6.Details.CommonProperties.CreatedOn
+                  = DateTime::Parse(node.Value, Azure::DateTime::DateFormat::Rfc3339);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kFifo
+                && xmlPath[3] == XmlTagEnum::kProperties
+                && xmlPath[4] == XmlTagEnum::kLastWriteTime)
+            {
+              vectorElement6.Details.CommonProperties.LastWrittenOn
+                  = DateTime::Parse(node.Value, Azure::DateTime::DateFormat::Rfc3339);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kFifo
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kChangeTime)
+            {
+              vectorElement6.Details.CommonProperties.ChangedOn
+                  = DateTime::Parse(node.Value, Azure::DateTime::DateFormat::Rfc3339);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kFifo
+                && xmlPath[3] == XmlTagEnum::kProperties
+                && xmlPath[4] == XmlTagEnum::kLastAccessTime)
+            {
+              vectorElement6.Details.CommonProperties.LastAccessedOn
+                  = DateTime::Parse(node.Value, Azure::DateTime::DateFormat::Rfc3339);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kFifo
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kLastModified)
+            {
+              vectorElement6.Details.CommonProperties.LastModified
+                  = DateTime::Parse(node.Value, Azure::DateTime::DateFormat::Rfc1123);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kFifo
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kEtag)
+            {
+              vectorElement6.Details.CommonProperties.ETag = ETag(node.Value);
+            }
+            else if (
+                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kFifo
+                && xmlPath[3] == XmlTagEnum::kPermissionKey)
+            {
+              vectorElement6.Details.Win32Properties.PermissionKey = node.Value;
+            }
+            else if (
+                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kFifo
+                && xmlPath[3] == XmlTagEnum::kAttributes)
+            {
+              vectorElement6.Details.Win32Properties.Attributes
+                  = Models::FileAttributes(node.Value);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kFifo
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kMode)
+            {
+              vectorElement6.Details.PosixProperties.Mode = node.Value;
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kFifo
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kUid)
+            {
+              vectorElement6.Details.PosixProperties.User = node.Value;
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kFifo
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kGid)
+            {
+              vectorElement6.Details.PosixProperties.Group = node.Value;
+            }
+            else if (
+                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kSocket
+                && xmlPath[3] == XmlTagEnum::kName)
+            {
+              vectorElement7.Name.Content = node.Value;
+            }
+            else if (
+                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kSocket
+                && xmlPath[3] == XmlTagEnum::kFileId)
+            {
+              vectorElement7.Details.CommonProperties.FileId = node.Value;
+            }
+            else if (
+                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kSocket
+                && xmlPath[3] == XmlTagEnum::kLinkCount)
+            {
+              vectorElement7.Details.CommonProperties.LinkCount = std::stoll(node.Value);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kSocket
+                && xmlPath[3] == XmlTagEnum::kProperties
+                && xmlPath[4] == XmlTagEnum::kContentLength)
+            {
+              vectorElement7.Details.CommonProperties.FileSize = std::stoll(node.Value);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kSocket
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kCreationTime)
+            {
+              vectorElement7.Details.CommonProperties.CreatedOn
+                  = DateTime::Parse(node.Value, Azure::DateTime::DateFormat::Rfc3339);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kSocket
+                && xmlPath[3] == XmlTagEnum::kProperties
+                && xmlPath[4] == XmlTagEnum::kLastWriteTime)
+            {
+              vectorElement7.Details.CommonProperties.LastWrittenOn
+                  = DateTime::Parse(node.Value, Azure::DateTime::DateFormat::Rfc3339);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kSocket
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kChangeTime)
+            {
+              vectorElement7.Details.CommonProperties.ChangedOn
+                  = DateTime::Parse(node.Value, Azure::DateTime::DateFormat::Rfc3339);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kSocket
+                && xmlPath[3] == XmlTagEnum::kProperties
+                && xmlPath[4] == XmlTagEnum::kLastAccessTime)
+            {
+              vectorElement7.Details.CommonProperties.LastAccessedOn
+                  = DateTime::Parse(node.Value, Azure::DateTime::DateFormat::Rfc3339);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kSocket
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kLastModified)
+            {
+              vectorElement7.Details.CommonProperties.LastModified
+                  = DateTime::Parse(node.Value, Azure::DateTime::DateFormat::Rfc1123);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kSocket
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kEtag)
+            {
+              vectorElement7.Details.CommonProperties.ETag = ETag(node.Value);
+            }
+            else if (
+                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kSocket
+                && xmlPath[3] == XmlTagEnum::kPermissionKey)
+            {
+              vectorElement7.Details.Win32Properties.PermissionKey = node.Value;
+            }
+            else if (
+                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kSocket
+                && xmlPath[3] == XmlTagEnum::kAttributes)
+            {
+              vectorElement7.Details.Win32Properties.Attributes
+                  = Models::FileAttributes(node.Value);
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kSocket
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kMode)
+            {
+              vectorElement7.Details.PosixProperties.Mode = node.Value;
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kSocket
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kUid)
+            {
+              vectorElement7.Details.PosixProperties.User = node.Value;
+            }
+            else if (
+                xmlPath.size() == 5 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kSocket
+                && xmlPath[3] == XmlTagEnum::kProperties && xmlPath[4] == XmlTagEnum::kGid)
+            {
+              vectorElement7.Details.PosixProperties.Group = node.Value;
             }
             else if (
                 xmlPath.size() == 2 && xmlPath[0] == XmlTagEnum::kEnumerationResults
@@ -3115,6 +3836,41 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
             {
               vectorElement2.Name.Encoded = node.Value == std::string("true");
             }
+            else if (
+                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kSymLink
+                && xmlPath[3] == XmlTagEnum::kName && node.Name == "Encoded")
+            {
+              vectorElement3.Name.Encoded = node.Value == std::string("true");
+            }
+            else if (
+                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kBlockDevice
+                && xmlPath[3] == XmlTagEnum::kName && node.Name == "Encoded")
+            {
+              vectorElement4.Name.Encoded = node.Value == std::string("true");
+            }
+            else if (
+                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kCharDevice
+                && xmlPath[3] == XmlTagEnum::kName && node.Name == "Encoded")
+            {
+              vectorElement5.Name.Encoded = node.Value == std::string("true");
+            }
+            else if (
+                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kFifo
+                && xmlPath[3] == XmlTagEnum::kName && node.Name == "Encoded")
+            {
+              vectorElement6.Name.Encoded = node.Value == std::string("true");
+            }
+            else if (
+                xmlPath.size() == 4 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kSocket
+                && xmlPath[3] == XmlTagEnum::kName && node.Name == "Encoded")
+            {
+              vectorElement7.Name.Encoded = node.Value == std::string("true");
+            }
           }
           else if (node.Type == _internal::XmlNodeType::EndTag)
           {
@@ -3130,6 +3886,41 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
             {
               response.Segment.FileItems.push_back(std::move(vectorElement2));
               vectorElement2 = Models::_detail::FileItem();
+            }
+            else if (
+                xmlPath.size() == 3 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kSymLink)
+            {
+              response.Segment.SymLinkItems.push_back(std::move(vectorElement3));
+              vectorElement3 = Models::_detail::SymLinkItem();
+            }
+            else if (
+                xmlPath.size() == 3 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kBlockDevice)
+            {
+              response.Segment.BlockDeviceItems.push_back(std::move(vectorElement4));
+              vectorElement4 = Models::_detail::BlockDeviceItem();
+            }
+            else if (
+                xmlPath.size() == 3 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kCharDevice)
+            {
+              response.Segment.CharDeviceItems.push_back(std::move(vectorElement5));
+              vectorElement5 = Models::_detail::CharDeviceItem();
+            }
+            else if (
+                xmlPath.size() == 3 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kFifo)
+            {
+              response.Segment.FifoItems.push_back(std::move(vectorElement6));
+              vectorElement6 = Models::_detail::FifoItem();
+            }
+            else if (
+                xmlPath.size() == 3 && xmlPath[0] == XmlTagEnum::kEnumerationResults
+                && xmlPath[1] == XmlTagEnum::kEntries && xmlPath[2] == XmlTagEnum::kSocket)
+            {
+              response.Segment.SocketItems.push_back(std::move(vectorElement7));
+              vectorElement7 = Models::_detail::SocketItem();
             }
             xmlPath.pop_back();
           }
@@ -3165,7 +3956,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
       {
         request.SetHeader("x-ms-recursive", options.Recursive.Value() ? "true" : "false");
       }
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (options.AllowTrailingDot.HasValue())
       {
         request.SetHeader(
@@ -3378,7 +4169,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
       {
         request.SetHeader("x-ms-recursive", options.Recursive.Value() ? "true" : "false");
       }
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (options.AllowTrailingDot.HasValue())
       {
         request.SetHeader(
@@ -3416,7 +4207,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
       auto request = Core::Http::Request(Core::Http::HttpMethod::Put, url);
       request.GetUrl().AppendQueryParameter("restype", "directory");
       request.GetUrl().AppendQueryParameter("comp", "rename");
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (!options.RenameSource.empty())
       {
         request.SetHeader("x-ms-file-rename-source", options.RenameSource);
@@ -3531,7 +4322,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
         request.SetHeader(
             "x-ms-allow-trailing-dot", options.AllowTrailingDot.Value() ? "true" : "false");
       }
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       request.SetHeader("x-ms-content-length", std::to_string(options.FileContentLength));
       request.SetHeader("x-ms-type", "file");
       if (options.FileContentType.HasValue() && !options.FileContentType.Value().empty())
@@ -3720,7 +4511,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
         request.SetHeader(
             "x-ms-allow-trailing-dot", options.AllowTrailingDot.Value() ? "true" : "false");
       }
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (options.Range.HasValue() && !options.Range.Value().empty())
       {
         request.SetHeader("x-ms-range", options.Range.Value());
@@ -3929,7 +4720,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
         request.GetUrl().AppendQueryParameter(
             "sharesnapshot", _internal::UrlEncodeQueryParameter(options.Sharesnapshot.Value()));
       }
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (options.LeaseId.HasValue() && !options.LeaseId.Value().empty())
       {
         request.SetHeader("x-ms-lease-id", options.LeaseId.Value());
@@ -4092,7 +4883,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
         request.SetHeader(
             "x-ms-allow-trailing-dot", options.AllowTrailingDot.Value() ? "true" : "false");
       }
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (options.LeaseId.HasValue() && !options.LeaseId.Value().empty())
       {
         request.SetHeader("x-ms-lease-id", options.LeaseId.Value());
@@ -4123,7 +4914,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
     {
       auto request = Core::Http::Request(Core::Http::HttpMethod::Put, url);
       request.GetUrl().AppendQueryParameter("comp", "properties");
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (options.FileContentLength.HasValue())
       {
         request.SetHeader("x-ms-content-length", std::to_string(options.FileContentLength.Value()));
@@ -4284,7 +5075,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
       {
         request.SetHeader("x-ms-meta-" + p.first, p.second);
       }
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (options.LeaseId.HasValue() && !options.LeaseId.Value().empty())
       {
         request.SetHeader("x-ms-lease-id", options.LeaseId.Value());
@@ -4328,7 +5119,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
       {
         request.SetHeader("x-ms-proposed-lease-id", options.ProposedLeaseId.Value());
       }
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (options.AllowTrailingDot.HasValue())
       {
         request.SetHeader(
@@ -4366,7 +5157,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
       {
         request.SetHeader("x-ms-lease-id", options.LeaseId);
       }
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (options.AllowTrailingDot.HasValue())
       {
         request.SetHeader(
@@ -4407,7 +5198,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
       {
         request.SetHeader("x-ms-proposed-lease-id", options.ProposedLeaseId.Value());
       }
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (options.AllowTrailingDot.HasValue())
       {
         request.SetHeader(
@@ -4445,7 +5236,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
       {
         request.SetHeader("x-ms-lease-id", options.LeaseId.Value());
       }
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (options.AllowTrailingDot.HasValue())
       {
         request.SetHeader(
@@ -4492,7 +5283,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
       {
         request.SetHeader("Content-MD5", Core::Convert::Base64Encode(options.ContentMD5.Value()));
       }
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (options.LeaseId.HasValue() && !options.LeaseId.Value().empty())
       {
         request.SetHeader("x-ms-lease-id", options.LeaseId.Value());
@@ -4589,7 +5380,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
             "x-ms-source-if-none-match-crc64",
             Core::Convert::Base64Encode(options.SourceIfNoneMatchCrc64.Value()));
       }
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (options.LeaseId.HasValue() && !options.LeaseId.Value().empty())
       {
         request.SetHeader("x-ms-lease-id", options.LeaseId.Value());
@@ -4665,7 +5456,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
             "prevsharesnapshot",
             _internal::UrlEncodeQueryParameter(options.Prevsharesnapshot.Value()));
       }
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (options.Range.HasValue() && !options.Range.Value().empty())
       {
         request.SetHeader("x-ms-range", options.Range.Value());
@@ -4813,7 +5604,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
         const Core::Context& context)
     {
       auto request = Core::Http::Request(Core::Http::HttpMethod::Put, url);
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       for (const auto& p : options.Metadata)
       {
         request.SetHeader("x-ms-meta-" + p.first, p.second);
@@ -4940,7 +5731,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
             "copyid", _internal::UrlEncodeQueryParameter(options.CopyId));
       }
       request.SetHeader("x-ms-copy-action", "abort");
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (options.LeaseId.HasValue() && !options.LeaseId.Value().empty())
       {
         request.SetHeader("x-ms-lease-id", options.LeaseId.Value());
@@ -4987,7 +5778,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
         request.GetUrl().AppendQueryParameter(
             "sharesnapshot", _internal::UrlEncodeQueryParameter(options.Sharesnapshot.Value()));
       }
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (options.AllowTrailingDot.HasValue())
       {
         request.SetHeader(
@@ -5196,7 +5987,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
       {
         request.SetHeader("x-ms-handle-id", options.HandleId);
       }
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (options.AllowTrailingDot.HasValue())
       {
         request.SetHeader(
@@ -5233,7 +6024,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
     {
       auto request = Core::Http::Request(Core::Http::HttpMethod::Put, url);
       request.GetUrl().AppendQueryParameter("comp", "rename");
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (!options.RenameSource.empty())
       {
         request.SetHeader("x-ms-file-rename-source", options.RenameSource);
@@ -5347,7 +6138,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
     {
       auto request = Core::Http::Request(Core::Http::HttpMethod::Put, url);
       request.GetUrl().AppendQueryParameter("restype", "symboliclink");
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       for (const auto& p : options.Metadata)
       {
         request.SetHeader("x-ms-meta-" + p.first, p.second);
@@ -5432,7 +6223,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
         request.GetUrl().AppendQueryParameter(
             "sharesnapshot", _internal::UrlEncodeQueryParameter(options.Sharesnapshot.Value()));
       }
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       if (options.FileRequestIntent.HasValue()
           && !options.FileRequestIntent.Value().ToString().empty())
       {
@@ -5460,7 +6251,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
     {
       auto request = Core::Http::Request(Core::Http::HttpMethod::Put, url);
       request.GetUrl().AppendQueryParameter("restype", "hardlink");
-      request.SetHeader("x-ms-version", "2026-10-06");
+      request.SetHeader("x-ms-version", "2026-12-06");
       request.SetHeader("x-ms-type", "file");
       if (options.LeaseId.HasValue() && !options.LeaseId.Value().empty())
       {

@@ -159,7 +159,6 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
        * MD5 hash for the downloaded range of data.
        */
       Nullable<ContentHash> TransactionalContentHash;
-
       /**
        * Standard HTTP properties supported files.
        */
@@ -372,12 +371,15 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
      */
     struct DirectoryItem final
     {
-      /** @brief The name of the item */
-      std::string Name;
       /**
-       * File properties.
+       * Name of the directory.
        */
-      DirectoryItemDetails Details;
+      std::string Name;
+
+      /**
+       * Poperties of the directory.
+       */
+      ListItemDetails Details;
     };
 
     /**
@@ -385,12 +387,120 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
      */
     struct FileItem final
     {
-      /** @brief The name of the item */
-      std::string Name;
       /**
-       * File properties.
+       * Name of the file.
        */
-      FileItemDetails Details;
+      std::string Name;
+
+      /**
+       * Properties of the file.
+       */
+      ListItemDetails Details;
+    };
+
+    /**
+     * @brief A listed symbolic link item.
+     */
+    struct SymLinkItem final
+    {
+      /**
+       * Name of the symbolic link.
+       */
+      std::string Name;
+
+      /**
+       * The link text contained in the symbolic link.
+       */
+      std::string LinkText;
+
+      /**
+       * Properties of the symbolic link.
+       */
+      ListItemDetails Details;
+    };
+
+    /**
+     * @brief A listed block device item.
+     */
+    struct BlockDeviceItem final
+    {
+      /**
+       * Name of the block device.
+       */
+      std::string Name;
+
+      /**
+       * The major device number of the block device.
+       */
+      std::int32_t DeviceMajor = std::int32_t();
+
+      /**
+       * The minor device number of the block device.
+       */
+      std::int32_t DeviceMinor = std::int32_t();
+
+      /**
+       * Properties of the block device.
+       */
+      ListItemDetails Details;
+    };
+
+    /**
+     * @brief A listed char device item.
+     */
+    struct CharDeviceItem final
+    {
+      /**
+       * Name of the char device.
+       */
+      std::string Name;
+
+      /**
+       * The major device number of the character device.
+       */
+      std::int32_t DeviceMajor = std::int32_t();
+
+      /**
+       * The minor device number of the character device.
+       */
+      std::int32_t DeviceMinor = std::int32_t();
+
+      /**
+       * Properties of the character device.
+       */
+      ListItemDetails Details;
+    };
+
+    /**
+     * @brief A listed FIFO item.
+     */
+    struct FifoItem final
+    {
+      /**
+       * Name of the FIFO.
+       */
+      std::string Name;
+
+      /**
+       * Properties of the FIFO.
+       */
+      ListItemDetails Details;
+    };
+
+    /**
+     * @brief A listed socket item.
+     */
+    struct SocketItem final
+    {
+      /**
+       * Name of the socket.
+       */
+      std::string Name;
+
+      /**
+       * Properties of the socket.
+       */
+      ListItemDetails Details;
     };
 
     /**
@@ -941,6 +1051,26 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
      * File items.
      */
     std::vector<Models::FileItem> Files;
+    /**
+     * Symbolic link items.
+     */
+    std::vector<Models::SymLinkItem> SymLinks;
+    /**
+     * Block device items.
+     */
+    std::vector<Models::BlockDeviceItem> BlockDevices;
+    /**
+     * Character device items.
+     */
+    std::vector<Models::CharDeviceItem> CharDevices;
+    /**
+     * FIFO items.
+     */
+    std::vector<Models::FifoItem> Fifos;
+    /**
+     * Socket items.
+     */
+    std::vector<Models::SocketItem> Sockets;
     /**
      * FileId of the directory.
      */

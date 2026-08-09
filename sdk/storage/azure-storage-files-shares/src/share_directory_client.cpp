@@ -542,6 +542,7 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
         directoryItem.Name = std::move(item.Name.Content);
       }
       directoryItem.Details = std::move(item.Details);
+      directoryItem.Details.CommonProperties.FileSize = 0;
       pagedResponse.Directories.push_back(std::move(directoryItem));
     }
     for (auto& item : response.Value.Segment.FileItems)
@@ -557,6 +558,80 @@ namespace Azure { namespace Storage { namespace Files { namespace Shares {
       }
       fileItem.Details = std::move(item.Details);
       pagedResponse.Files.push_back(std::move(fileItem));
+    }
+    for (auto& item : response.Value.Segment.SymLinkItems)
+    {
+      Models::SymLinkItem symLinkItem;
+      if (item.Name.Encoded)
+      {
+        symLinkItem.Name = Core::Url::Decode(item.Name.Content);
+      }
+      else
+      {
+        symLinkItem.Name = std::move(item.Name.Content);
+      }
+      symLinkItem.Details = std::move(item.Details);
+      pagedResponse.SymLinks.push_back(std::move(symLinkItem));
+    }
+    for (auto& item : response.Value.Segment.BlockDeviceItems)
+    {
+      Models::BlockDeviceItem blockDeviceItem;
+      if (item.Name.Encoded)
+      {
+        blockDeviceItem.Name = Core::Url::Decode(item.Name.Content);
+      }
+      else
+      {
+        blockDeviceItem.Name = std::move(item.Name.Content);
+      }
+      blockDeviceItem.Details = std::move(item.Details);
+      blockDeviceItem.Details.CommonProperties.FileSize = 0;
+      pagedResponse.BlockDevices.push_back(std::move(blockDeviceItem));
+    }
+    for (auto& item : response.Value.Segment.CharDeviceItems)
+    {
+      Models::CharDeviceItem charDeviceItem;
+      if (item.Name.Encoded)
+      {
+        charDeviceItem.Name = Core::Url::Decode(item.Name.Content);
+      }
+      else
+      {
+        charDeviceItem.Name = std::move(item.Name.Content);
+      }
+      charDeviceItem.Details = std::move(item.Details);
+      charDeviceItem.Details.CommonProperties.FileSize = 0;
+      pagedResponse.CharDevices.push_back(std::move(charDeviceItem));
+    }
+    for (auto& item : response.Value.Segment.FifoItems)
+    {
+      Models::FifoItem fifoItem;
+      if (item.Name.Encoded)
+      {
+        fifoItem.Name = Core::Url::Decode(item.Name.Content);
+      }
+      else
+      {
+        fifoItem.Name = std::move(item.Name.Content);
+      }
+      fifoItem.Details = std::move(item.Details);
+      fifoItem.Details.CommonProperties.FileSize = 0;
+      pagedResponse.Fifos.push_back(std::move(fifoItem));
+    }
+    for (auto& item : response.Value.Segment.SocketItems)
+    {
+      Models::SocketItem socketItem;
+      if (item.Name.Encoded)
+      {
+        socketItem.Name = Core::Url::Decode(item.Name.Content);
+      }
+      else
+      {
+        socketItem.Name = std::move(item.Name.Content);
+      }
+      socketItem.Details = std::move(item.Details);
+      socketItem.Details.CommonProperties.FileSize = 0;
+      pagedResponse.Sockets.push_back(std::move(socketItem));
     }
     pagedResponse.DirectoryId = response.Value.DirectoryId.ValueOr(std::string());
     pagedResponse.m_shareDirectoryClient = std::make_shared<ShareDirectoryClient>(*this);
