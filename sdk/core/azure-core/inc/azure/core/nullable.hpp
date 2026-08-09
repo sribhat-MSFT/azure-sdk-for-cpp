@@ -22,6 +22,11 @@ namespace _detail {
   };
 } // namespace _detail
 
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif // __GNUC__
+
 /**
  * @brief Manages an optional contained value, i.e. a value that may or may not be present.
  *
@@ -387,4 +392,7 @@ public:
     return static_cast<typename std::remove_cv<T>::type>(std::forward<U>(other));
   }
 };
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif // __GNUC__
 } // namespace Azure
